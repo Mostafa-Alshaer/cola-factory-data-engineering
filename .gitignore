@@ -1,0 +1,3 @@
+/deployment/create-cloud-resources/terraform/aws/main/.terraform/
+/deployment/create-cloud-resources/terraform/aws/main/.terraform.lock.hcl
+/.idea/*

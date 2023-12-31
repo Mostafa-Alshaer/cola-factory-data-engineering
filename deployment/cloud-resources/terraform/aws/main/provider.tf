@@ -12,7 +12,8 @@ terraform {
   }
   backend "s3" {
     region = "us-east-1"
-    bucket = "cola-factory-tf-state"
-    key = "data-team/terraform.tfstate"
+    bucket = "cola-factory-data-team-deployment"
+    workspace_key_prefix = "tf-state"
+    key = "terraform.tfstate"
   }
  }

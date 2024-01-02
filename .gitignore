@@ -1,3 +1,4 @@
 /deployment/cloud-resources/terraform/aws/main/.terraform/
 /deployment/cloud-resources/terraform/aws/main/.terraform.lock.hcl
 /.idea/*
+/src/lambda/code/cola-factory-data-team-copy-to-process.zip

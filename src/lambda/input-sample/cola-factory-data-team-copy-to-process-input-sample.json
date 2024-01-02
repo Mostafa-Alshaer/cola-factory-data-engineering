@@ -1,0 +1,14 @@
+{
+  "Records": [
+        {
+          "s3": {
+            "bucket": {
+              "name": "cola-factory-raw-data-mustafa-dev"
+            },
+            "object": {
+              "key": "run-reports/site_id=0001/machine_id=0001/year=2023/month=12/day=31/063fb882-8641-43e1-9c2e-58bdb6dc696f.csv"
+            }
+          }
+        }
+    ]
+}

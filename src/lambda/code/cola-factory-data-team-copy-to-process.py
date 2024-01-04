@@ -9,8 +9,6 @@ def lambda_handler(event, context):
     # extract s3 bucket and key
     s3_bucket_name = event['Records'][0]['s3']['bucket']['name']
     s3_key = unquote(event['Records'][0]['s3']['object']['key'])
-    print(f's3_bucket_name: {s3_bucket_name}')
-    print(f's3_key: {s3_key}')
 
     # copy the new object to process bucket
     s3_client = boto3.resource('s3')

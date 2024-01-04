@@ -42,3 +42,8 @@ module trigger-copy-to-process-by-raw-data-permission {
   copy_to_process_lambda_arn = module.copy-to-process-lambda.copy-to-process-lambda.arn
   raw_data_bucket_arn = module.cola-factory-raw-data.s3_bucket.arn
 }
+# bucket for the processed data of the cola factory
+module cola-factory-processed-data {
+  source     = "../s3/buckets/cola-factory-processed-data"
+  environment  = local.environment
+}

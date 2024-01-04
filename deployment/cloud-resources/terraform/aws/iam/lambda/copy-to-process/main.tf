@@ -38,29 +38,9 @@ resource "aws_iam_role_policy_attachment" "lambda_s3_read_raw_data_attachment" {
   policy_arn = aws_iam_policy.s3_read_raw_data_policy.arn
 }
 
-resource "aws_iam_policy" "lambda_execution_logs_policy" {
-  name        = "lambda-execution-logs-policy-${var.environment}"
-  description = "Policy to allow lambda create logs steam and put logs."
-
-  policy = jsonencode({
-    "Version" : "2012-10-17",
-    "Statement" : [
-      {
-        "Effect" : "Allow",
-        "Action" : [
-          "logs:CreateLogGroup",
-          "logs:CreateLogStream",
-          "logs:PutLogEvents"
-        ],
-        "Resource" : "*"
-      }
-    ]
-  })
-}
-
 resource "aws_iam_role_policy_attachment" "lambda_execution_logs_attachment" {
   role       = aws_iam_role.role.name
-  policy_arn = aws_iam_policy.lambda_execution_logs_policy.arn
+  policy_arn = var.lambda_execution_logs_policy_arn
 }
 
 resource "aws_iam_policy" "s3_read_put_process_data_policy" {

@@ -8,6 +8,7 @@ resource "aws_lambda_function" "copy-to-process-lambda" {
   environment {
     variables = {
       PROCESS_BUCKET = var.process_data_bucket_name
+      BATCH_PATH = "batch/"
     }
   }
   tags = {

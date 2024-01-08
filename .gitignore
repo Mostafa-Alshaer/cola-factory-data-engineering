@@ -2,3 +2,6 @@
 /deployment/cloud-resources/terraform/aws/main/.terraform.lock.hcl
 /.idea/*
 /src/lambda/code/cola-factory-data-team-copy-to-process.zip
+/test/data-generator/all_json_objects.json
+/src/lambda/code/cola-factory-data-team-delete-s3-objects.zip
+/src/lambda/code/cola-factory-data-team-move-s3-objects.zip

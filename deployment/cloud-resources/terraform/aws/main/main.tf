@@ -92,3 +92,14 @@ module move-s3-objects-lambda {
   role_arn = module.iam-move-s3-objects-lambda.move_s3_objects_lambda_role.arn
   environment  = local.environment
 }
+# athena workgroup for cola factory data team project
+module cola-factory-athena-workgroup {
+  source     = "../athena/work-group"
+  environment  = local.environment
+}
+# athena database process data for cola factory data team project
+module cola-factory-athena-process-database {
+  source     = "../athena/database"
+  database_bucket_id = module.cola-factory-process-data.s3_bucket.id
+  database_name = "cola_process_data_${local.environment}"
+}

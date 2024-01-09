@@ -1,4 +1,4 @@
-CREATE EXTERNAL TABLE IF NOT EXISTS `cola_process_data_mostafadev`.`run_reports_batch_tbl` (
+CREATE EXTERNAL TABLE IF NOT EXISTS `cola_process_data_${environment}`.`run_reports_batch_tbl` (
     `id` string,
     `type` string,
     `time` string,
@@ -10,10 +10,10 @@ WITH SERDEPROPERTIES (
   'field.delim' = ',',
   'serialization.format' = ','
 )
-LOCATION 's3://cola-factory-process-data-mostafadev/batch/run-reports'
+LOCATION 's3://cola-factory-process-data-${environment}/batch/run_reports'
 TBLPROPERTIES ('has_encrypted_data'='false');
 
-CREATE EXTERNAL TABLE `cola_process_data_mostafadev`.`run_reports_leftover_tbl`(
+CREATE EXTERNAL TABLE `cola_process_data_${environment}`.`run_reports_leftover_tbl`(
     `id` string,
     `type` string,
     `time` string,
@@ -27,10 +27,10 @@ STORED AS INPUTFORMAT
 OUTPUTFORMAT
   'org.apache.hadoop.hive.ql.io.parquet.MapredParquetOutputFormat'
 LOCATION
-  's3://cola-factory-process-data-mostafadev/leftover/run-reports/tables/'
+  's3://cola-factory-process-data-${environment}/leftover/run_reports/tables/'
 TBLPROPERTIES ('parquet.compression'='SNAPPY');
 
-CREATE EXTERNAL TABLE `cola_process_data_mostafadev`.`run_reports_context_tbl`(
+CREATE EXTERNAL TABLE `cola_process_data_${environment}`.`run_reports_context_tbl`(
     `id` string,
     `type` string,
     `time` string,
@@ -44,5 +44,5 @@ STORED AS INPUTFORMAT
 OUTPUTFORMAT
   'org.apache.hadoop.hive.ql.io.parquet.MapredParquetOutputFormat'
 LOCATION
-  's3://cola-factory-process-data-mostafadev/context/run-reports/tables/'
+  's3://cola-factory-process-data-${environment}/context/run_reports/tables/'
 TBLPROPERTIES ('parquet.compression'='SNAPPY');

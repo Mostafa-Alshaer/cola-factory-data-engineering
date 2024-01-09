@@ -103,3 +103,19 @@ module cola-factory-athena-process-database {
   database_bucket_id = module.cola-factory-process-data.s3_bucket.id
   database_name = "cola_process_data_${local.environment}"
 }
+# iam for the read-config lambda
+module iam-read-config-lambda {
+  source     = "../iam/lambda/read-config"
+  process_data_bucket_arn = module.cola-factory-process-data.s3_bucket.arn
+  lambda_execution_logs_policy_arn = module.lambda-execution-logs-policy.lambda_execution_logs_policy.arn
+  environment  = local.environment
+}
+# read config lambda
+module read-config-lambda {
+  source            = "../lambda/read-config"
+  python_code_path = "../../../../../src/lambda/code"
+  python_file_name = "cola-factory-data-team-read-config"
+  role_arn = module.iam-read-config-lambda.read_config_lambda_role.arn
+  environment  = local.environment
+  process_data_bucket_name = replace(module.cola-factory-process-data.s3_bucket.arn, "arn:aws:s3:::", "")
+}

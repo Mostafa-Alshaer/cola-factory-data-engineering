@@ -119,3 +119,26 @@ module read-config-lambda {
   environment  = local.environment
   process_data_bucket_name = replace(module.cola-factory-process-data.s3_bucket.arn, "arn:aws:s3:::", "")
 }
+# iam for the run-ctas-athena lambda
+module iam-run-ctas-athena-lambda {
+  source     = "../iam/lambda/run-ctas-athena"
+  process_data_bucket_arn = module.cola-factory-process-data.s3_bucket.arn
+  lambda_execution_logs_policy_arn = module.lambda-execution-logs-policy.lambda_execution_logs_policy.arn
+  s3_read_delete_process_data_policy_arn = module.s3-read-delete-process-data-policy.s3_read_delete_process_data_policy.arn
+  environment  = local.environment
+  athena_work_group_arn = module.cola-factory-athena-workgroup.workgroup.arn
+}
+# run ctas athena lambda
+module run-ctas-athena-lambda {
+  source            = "../lambda/run-ctas-athena"
+  python_code_path = "../../../../../src/lambda/code"
+  python_file_name = "cola-factory-data-team-run-ctas-athena"
+  role_arn = module.iam-run-ctas-athena-lambda.run_ctas_athena_lambda_role.arn
+  environment  = local.environment
+  pyathena_lambda_layer_arn = module.pyathena-lambda-layer.pyathena_layer.arn
+}
+# pyathena layer
+module pyathena-lambda-layer {
+  source            = "../lambda-layer/pyathena"
+  environment  = local.environment
+}

@@ -15,6 +15,11 @@ variable "role_arn" {
   description = "The role should be attached with this lambda."
   type = string
 }
+variable "layers" {
+    description = "The list of needed layers for the lambda."
+    type = list
+    default = []
+}
 variable "environment" {
     description = "The environment name."
     type = string

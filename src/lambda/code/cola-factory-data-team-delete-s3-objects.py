@@ -13,7 +13,7 @@ def get_all_folders_inside_tables(bucket_name, key):
     folders = []
     for prefix in result.search('CommonPrefixes'):
         if prefix:
-            folders.append(prefix.get('Prefix').split('/')[5])
+            folders.append(prefix.get('Prefix').split('/')[3])
     return folders
 
 
@@ -66,29 +66,29 @@ def clean_working_folders(all_data, working_folders_bucket_name):
 def lambda_handler(event, context):
     print(f'event: {event}')
 
-    # get athena output location info
-    athena_output_location_info = event['athena_output_location_info']
-    print("Getting athena output location info succeed!")
-
     # get s3 resource instance
     s3_resource = boto3.resource('s3')
     print("Getting s3 resource instance succeed!")
 
     # get athena output bucket instance
-    athena_output_bucket_name = athena_output_location_info['bucket_name']
+    athena_output_bucket_name = event['bucket_name']
     athena_output_bucket = s3_resource.Bucket(athena_output_bucket_name)
     print("Getting athena output bucket instance succeed!")
 
     # get working folder bucket name
-    working_folders_bucket_name = event['working_folders_bucket_name']
+    working_folders_bucket_name = event['bucket_name']
     print("Getting working folder bucket name succeed!")
 
+    # get to delete query out path 
+    path = event['path']
+    print("Getting to delete query out path succeed!")
+
     # get the athena output parquet files and content
-    folders = get_all_folders_inside_tables(athena_output_bucket_name, athena_output_location_info['path'] + "tables/")
+    folders = get_all_folders_inside_tables(athena_output_bucket_name, path + "tables/")
     print("folders inside tables", folders)
     all_files_contents_list = []
     for folder in folders:
-        athena_parquets_full_path = athena_output_location_info['path'] + "tables/" + folder + "/"
+        athena_parquets_full_path = path + "tables/" + folder + "/"
         print("athena_parquets_full_path", athena_parquets_full_path)
         athena_output_parquet_files = athena_output_bucket.objects.filter(Prefix=athena_parquets_full_path)
         print("Getting athena output parquet files object summaries succeed")

@@ -1,7 +1,4 @@
 {
-  "athena_output_location_info": {
-        "bucket_name": "cola-factory-process-data-mostafadev",
-        "path": "s6-serverless/ctas/threshold/to_delete/"
-  },
-  "working_folders_bucket_name": "cola-factory-process-data-mostafadev"
+  "bucket_name": "cola-factory-process-data-mostafadev",
+  "path": "s6-serverless/ctas/threshold/to_delete/"
 }

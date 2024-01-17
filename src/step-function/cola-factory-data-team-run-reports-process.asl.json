@@ -1,0 +1,201 @@
+{
+  "Comment": "A Step Functions workflow that performs tasks using Athena and S3",
+  "StartAt": "ReadConfigFile",
+  "States": {
+    "ReadConfigFile": {
+      "Type": "Task",
+      "Resource": "arn:aws:lambda:us-east-1:954226799278:function:cola-factory-data-team-read-config-mostafadev",
+      "ResultPath": "$.config",
+      "Parameters": {
+        "config_s3_key": "config/process-run-reports-config.json"
+      },
+      "Next": "ShouldRun"
+    },
+    "ShouldRun": {
+      "Type": "Choice",
+      "Choices": [
+        {
+          "Variable": "$.config.should_run",
+          "NumericEquals": 1,
+          "Next": "RunContextQuery"
+        }
+      ],
+      "Default": "Hold"
+    },
+    "Hold": {
+      "Type": "Pass",
+      "End": true
+    },
+    "RunContextQuery": {
+      "Type": "Task",
+      "Resource": "arn:aws:lambda:us-east-1:954226799278:function:cola-factory-data-team-run-ctas-athena-mostafadev",
+      "Parameters": {
+        "bucket_name.$": "$.config.process_bucket_name",
+        "data_base.$": "$.config.database",
+        "work_group.$": "$.config.workgroup",
+        "drop_query.$": "$.config.queries.context.drop.query",
+        "ctas_query.$": "$.config.queries.context.create.query",
+        "drop_output_location.$": "$.config.drop_queries_output_prefix",
+        "ctas_output_location.$": "$.config.queries.context.create.output_prefix"
+      },
+      "Retry": [
+        {
+          "ErrorEquals": [
+            "Lambda.ServiceException",
+            "Lambda.AWSLambdaException",
+            "Lambda.SdkClientException"
+          ],
+          "IntervalSeconds": 2,
+          "MaxAttempts": 3,
+          "BackoffRate": 2
+        }
+      ],
+      "ResultPath": null,
+      "Next": "MainParallel"
+    },
+    "MainParallel": {
+      "Type": "Parallel",
+      "Next": "RunToDeleteQuery",
+      "OutputPath": "$[0]",
+      "Branches": [
+        {
+          "StartAt": "RunLogicQuery",
+          "States": {
+            "RunLogicQuery": {
+              "Type": "Task",
+              "Resource": "arn:aws:lambda:us-east-1:954226799278:function:cola-factory-data-team-run-ctas-athena-mostafadev",
+              "Parameters": {
+                "bucket_name.$": "$.config.process_bucket_name",
+                "data_base.$": "$.config.database",
+                "work_group.$": "$.config.workgroup",
+                "drop_query.$": "$.config.queries.logic.drop.query",
+                "ctas_query.$": "$.config.queries.logic.create.query",
+                "drop_output_location.$": "$.config.drop_queries_output_prefix",
+                "ctas_output_location.$": "$.config.queries.logic.create.output_prefix"
+              },
+              "Retry": [
+                {
+                  "ErrorEquals": [
+                    "Lambda.ServiceException",
+                    "Lambda.AWSLambdaException",
+                    "Lambda.SdkClientException"
+                  ],
+                  "IntervalSeconds": 2,
+                  "MaxAttempts": 6,
+                  "BackoffRate": 2
+                }
+              ],
+              "ResultPath": null,
+              "Next": "MoveFinalResult"
+            },
+            "MoveFinalResult": {
+                      "Type": "Task",
+                      "Resource": "arn:aws:lambda:us-east-1:954226799278:function:cola-factory-data-team-move-s3-objects-mostafadev",
+                      "Parameters": {
+                        "source_bucket.$": "$.config.process_bucket_name",
+                        "source_path.$": "$.config.queries.logic.create.output_prefix",
+                        "destination_bucket.$": "$.config.processed_bucket_name",
+                        "destination_path.$": "States.Format('{}run-reports/', $.config.processed_parquet_prefix)"
+                      },
+                      "Retry": [
+                        {
+                          "ErrorEquals": [
+                            "Lambda.ServiceException",
+                            "Lambda.AWSLambdaException",
+                            "Lambda.SdkClientException"
+                          ],
+                          "IntervalSeconds": 2,
+                          "MaxAttempts": 6,
+                          "BackoffRate": 2
+                        }
+                      ],
+                      "ResultPath": null,
+                      "End": true
+                    }
+          }
+        },
+        {
+          "StartAt": "RunLeftoverQuery",
+          "States": {
+            "RunLeftoverQuery": {
+              "Type": "Task",
+              "Resource": "arn:aws:lambda:us-east-1:954226799278:function:cola-factory-data-team-run-ctas-athena-mostafadev",
+              "Parameters": {
+                "bucket_name.$": "$.config.process_bucket_name",
+                "data_base.$": "$.config.database",
+                "work_group.$": "$.config.workgroup",
+                "drop_query.$": "$.config.queries.leftover.drop.query",
+                "ctas_query.$": "$.config.queries.leftover.create.query",
+                "drop_output_location.$": "$.config.drop_queries_output_prefix",
+                "ctas_output_location.$": "$.config.queries.leftover.create.output_prefix"
+              },
+              "Retry": [
+                {
+                  "ErrorEquals": [
+                    "Lambda.ServiceException",
+                    "Lambda.AWSLambdaException",
+                    "Lambda.SdkClientException"
+                  ],
+                  "IntervalSeconds": 2,
+                  "MaxAttempts": 6,
+                  "BackoffRate": 2
+                }
+              ],
+              "ResultPath": null,
+              "End": true
+            }
+          }
+        }
+      ]
+    },
+    "RunToDeleteQuery": {
+      "Type": "Task",
+      "Resource": "arn:aws:lambda:us-east-1:954226799278:function:cola-factory-data-team-run-ctas-athena-mostafadev",
+      "Parameters": {
+        "bucket_name.$": "$.config.process_bucket_name",
+        "data_base.$": "$.config.database",
+        "work_group.$": "$.config.workgroup",
+        "drop_query.$": "$.config.queries.to_delete.drop.query",
+        "ctas_query.$": "$.config.queries.to_delete.create.query",
+        "drop_output_location.$": "$.config.drop_queries_output_prefix",
+        "ctas_output_location.$": "$.config.queries.to_delete.create.output_prefix"
+      },
+      "Retry": [
+        {
+          "ErrorEquals": [
+            "Lambda.ServiceException",
+            "Lambda.AWSLambdaException",
+            "Lambda.SdkClientException"
+          ],
+          "IntervalSeconds": 2,
+          "MaxAttempts": 6,
+          "BackoffRate": 2
+        }
+      ],
+      "ResultPath": null,
+      "Next": "DeleteProcessedObjects"
+    },
+    "DeleteProcessedObjects": {
+      "Type": "Task",
+      "Resource": "arn:aws:lambda:us-east-1:954226799278:function:cola-factory-data-team-delete-s3-objects-mostafadev",
+      "Parameters": {
+        "bucket_name.$": "$.config.process_bucket_name",
+        "path.$": "$.config.queries.to_delete.create.output_prefix"
+      },
+      "Retry": [
+        {
+          "ErrorEquals": [
+            "Lambda.ServiceException",
+            "Lambda.AWSLambdaException",
+            "Lambda.SdkClientException"
+          ],
+          "IntervalSeconds": 2,
+          "MaxAttempts": 6,
+          "BackoffRate": 2
+        }
+      ],
+      "ResultPath": null,
+      "End": true
+    }
+  }
+}

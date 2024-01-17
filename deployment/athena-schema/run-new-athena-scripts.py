@@ -99,10 +99,10 @@ def execute_athena_query(query, output_location, database='your_database'):
 # Replace these values with your specific path, S3, and Athena information
 environment = os.environ["ENVIRONMENT"]
 local_path = os.getcwd().replace('deployment/athena-schema', 'src/athena')
-s3_bucket_name = f'cola-factory-process-data-{environment}'
+s3_bucket_name = f'cola-factory-data-team-deployment'
 s3_object_key = f'athena-schema/last-schema-script-numbers/environment={environment}/last-schema-script-number.txt '
-athena_output_location = f's3://cola-factory-process-data-{environment}/athena-schema/creating-output/ '
-athena_database = 'cola_process_data_mostafadev'
+athena_output_location = f's3://cola-factory-data-team-deployment/athena-schema/creating-output/ '
+athena_database = f'cola_process_data_{environment}'
 
 
 # Step 1: Get local script numbers
@@ -120,7 +120,7 @@ else:
 print(f"\nLast Executed Script Number from S3: {last_executed_script_number}")
 
 # Step 4: Execute scripts with a number higher than the last executed script number
-for script_file in [f for f in os.listdir(local_path) if f.endswith('.sql')]:
+for script_file in sorted([f for f in os.listdir(local_path) if f.endswith('.sql')]):
     script_number = extract_script_number(script_file)
 
     if script_number is not None and script_number > last_executed_script_number:

@@ -4,7 +4,7 @@ from datetime import datetime, timezone
 
 
 def generate_csv_data(num_records):
-    csv_data = [['id', 'branch_id', 'machine_id', 'type', 'time']]
+    csv_data = []
 
     for i in range(num_records):
         record_id = str(uuid.uuid4())
@@ -13,7 +13,7 @@ def generate_csv_data(num_records):
         record_type = 'start' if i % 2 == 0 else 'stop'
         record_time = datetime.utcnow().replace(tzinfo=timezone.utc).isoformat()
 
-        csv_data.append([record_id, record_branch_id, record_machine_id, record_type, record_time])
+        csv_data.append([record_id, record_type, record_time, record_branch_id, record_machine_id])
 
     return csv_data
 
@@ -28,7 +28,7 @@ def write_csv_to_s3(csv_data, bucket_name, key):
 
 if __name__ == "__main__":
 
-    csv_data_sample = generate_csv_data(10)
+    csv_data_sample = generate_csv_data(9)
 
     bucket_name_example = 'cola-factory-raw-data-mostafadev'
     key_example = f'run-reports/year=2024/month=01/day=03/{str(uuid.uuid4())}.csv'

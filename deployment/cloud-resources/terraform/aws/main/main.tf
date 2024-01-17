@@ -143,3 +143,22 @@ module pyathena-lambda-layer {
   source            = "../lambda-layer/pyathena"
   environment  = local.environment
 }
+# iam for the run reports step function
+module iam-run-reports-process-step-function {
+  source     = "../iam/step-function/run-reports-process"
+  environment  = local.environment
+  lambdas_arns = [module.read-config-lambda.read-config-lambda.arn,
+                  module.run-ctas-athena-lambda.run-ctas-athena-lambda.arn,
+                  module.delete-s3-objects-lambda.delete-s3-objects-lambda.arn,
+                  module.move-s3-objects-lambda.move-s3-objects-lambda.arn]
+}
+# run reports step function
+module run-reports-process-step-function {
+  source     = "../step-function/run-reports-process"
+  role_arn  = module.iam-run-reports-process-step-function.run_reports_step_function_role.arn
+  environment = local.environment
+  read_config_file_lambda_arn = module.read-config-lambda.read-config-lambda.arn
+  run_ctas_athena_lambda_arn = module.run-ctas-athena-lambda.run-ctas-athena-lambda.arn
+  delete_s3_objects_lambda_arn = module.delete-s3-objects-lambda.delete-s3-objects-lambda.arn
+  move_s3_objects_lambda_arn = module.move-s3-objects-lambda.move-s3-objects-lambda.arn
+}

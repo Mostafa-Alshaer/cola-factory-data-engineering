@@ -4,7 +4,7 @@
   "States": {
     "ReadConfigFile": {
       "Type": "Task",
-      "Resource": "arn:aws:lambda:us-east-1:954226799278:function:cola-factory-data-team-read-config-mostafadev",
+      "Resource": "${read_config_file_lambda_arn}",
       "ResultPath": "$.config",
       "Parameters": {
         "config_s3_key": "config/process-run-reports-config.json"
@@ -28,7 +28,7 @@
     },
     "RunContextQuery": {
       "Type": "Task",
-      "Resource": "arn:aws:lambda:us-east-1:954226799278:function:cola-factory-data-team-run-ctas-athena-mostafadev",
+      "Resource": "${run_ctas_athena_lambda_arn}",
       "Parameters": {
         "bucket_name.$": "$.config.process_bucket_name",
         "data_base.$": "$.config.database",
@@ -63,7 +63,7 @@
           "States": {
             "RunLogicQuery": {
               "Type": "Task",
-              "Resource": "arn:aws:lambda:us-east-1:954226799278:function:cola-factory-data-team-run-ctas-athena-mostafadev",
+              "Resource": "${run_ctas_athena_lambda_arn}",
               "Parameters": {
                 "bucket_name.$": "$.config.process_bucket_name",
                 "data_base.$": "$.config.database",
@@ -90,7 +90,7 @@
             },
             "MoveFinalResult": {
                       "Type": "Task",
-                      "Resource": "arn:aws:lambda:us-east-1:954226799278:function:cola-factory-data-team-move-s3-objects-mostafadev",
+                      "Resource": "${move_s3_objects_lambda_arn}",
                       "Parameters": {
                         "source_bucket.$": "$.config.process_bucket_name",
                         "source_path.$": "$.config.queries.logic.create.output_prefix",
@@ -119,7 +119,7 @@
           "States": {
             "RunLeftoverQuery": {
               "Type": "Task",
-              "Resource": "arn:aws:lambda:us-east-1:954226799278:function:cola-factory-data-team-run-ctas-athena-mostafadev",
+              "Resource": "${run_ctas_athena_lambda_arn}",
               "Parameters": {
                 "bucket_name.$": "$.config.process_bucket_name",
                 "data_base.$": "$.config.database",
@@ -150,7 +150,7 @@
     },
     "RunToDeleteQuery": {
       "Type": "Task",
-      "Resource": "arn:aws:lambda:us-east-1:954226799278:function:cola-factory-data-team-run-ctas-athena-mostafadev",
+      "Resource": "${run_ctas_athena_lambda_arn}",
       "Parameters": {
         "bucket_name.$": "$.config.process_bucket_name",
         "data_base.$": "$.config.database",
@@ -177,7 +177,7 @@
     },
     "DeleteProcessedObjects": {
       "Type": "Task",
-      "Resource": "arn:aws:lambda:us-east-1:954226799278:function:cola-factory-data-team-delete-s3-objects-mostafadev",
+      "Resource": "${delete_s3_objects_lambda_arn}",
       "Parameters": {
         "bucket_name.$": "$.config.process_bucket_name",
         "path.$": "$.config.queries.to_delete.create.output_prefix"

@@ -1,12 +1,13 @@
 {
   "should_run": 1,
-  "workgroup": "cola_data_team_process_work_group_${environment}",
-  "database": "cola_process_data_${environment}",
-  "process_bucket_name": "cola-factory-process-data-${environment}",
-  "athena_output_bucket_name": "cola-factory-process-data-${environment}",
-  "resolved_parquet_prefix": "s3://cola-factory-processed-data-${environment}/parquet-data/",
-  "drop_queries_output_location": "s3://cola-factory-processed-data-${environment}/athena-output/drop",
-  "drop_queries_output_prefix": "athena-output/drop",
+  "workgroup": "cola_data_team_process_work_group_mostafadev",
+  "database": "cola_process_data_mostafadev",
+  "process_bucket_name": "cola-factory-process-data-mostafadev",
+  "athena_output_bucket_name": "cola-factory-process-data-mostafadev",
+  "processed_bucket_name": "cola-factory-processed-data-mostafadev",
+  "processed_parquet_prefix": "parquet/",
+  "drop_queries_output_location": "s3://cola-factory-processed-data-mostafadev/athena-output/drop",
+  "drop_queries_output_prefix": "athena-output/drop/",
   "queries": {
     "context": {
         "drop": {
@@ -14,8 +15,8 @@
         },
         "create": {
           "query": "CREATE TABLE run_reports_context_tbl WITH (format = 'Parquet', parquet_compression = 'SNAPPY') AS SELECT * FROM run_reports_context_view;",
-          "output_location": "s3://cola-factory-process-data-${environment}/context/run_reports",
-          "output_prefix": "context/run_reports"
+          "output_location": "s3://cola-factory-process-data-mostafadev/context/run_reports",
+          "output_prefix": "context/run_reports/"
         }
       },
       "leftover": {
@@ -24,22 +25,28 @@
         },
         "create": {
           "query": "CREATE TABLE run_reports_leftover_tbl WITH (format = 'Parquet', parquet_compression = 'SNAPPY') AS SELECT * FROM run_reports_leftover_view;",
-          "output_location": "s3://cola-factory-process-data-${environment}/leftover/run_reports",
-          "output_prefix": "leftover/run_reports"
+          "output_location": "s3://cola-factory-process-data-mostafadev/leftover/run_reports",
+          "output_prefix": "leftover/run_reports/"
         }
       },
       "logic": {
-        "view": {
-          "query": "SELECT * FROM run_reports_logic_view;",
-          "output_location": "s3://cola-factory-process-data-${environment}/logic/run_reports",
-          "output_prefix": "logic/run_reports"
+        "drop": {
+          "query": "DROP TABLE IF EXISTS run_reports_logic_tbl"
+        },
+        "create": {
+          "query": "CREATE TABLE run_reports_logic_tbl WITH (format = 'Parquet', parquet_compression = 'SNAPPY') AS SELECT * FROM run_reports_logic_view;",
+          "output_location": "s3://cola-factory-process-data-mostafadev/logic/run_reports",
+          "output_prefix": "logic/run_reports/"
         }
       },
       "to_delete": {
-        "view": {
-          "query": "SELECT * FROM run_reports_to_delete_view;",
-          "output_location": "s3://cola-factory-process-data-${environment}/to_delete/run_reports",
-          "output_prefix": "logic/run_reports"
+        "drop": {
+          "query": "DROP TABLE IF EXISTS run_reports_to_delete_tbl"
+        },
+        "create": {
+          "query": "CREATE TABLE run_reports_to_delete_tbl WITH (format = 'Parquet', parquet_compression = 'SNAPPY') AS SELECT * FROM run_reports_to_delete_view;",
+          "output_location": "s3://cola-factory-process-data-mostafadev/to_delete/run_reports",
+          "output_prefix": "to_delete/run_reports/"
         }
       }
   }

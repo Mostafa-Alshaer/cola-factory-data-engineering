@@ -33,10 +33,10 @@
         "bucket_name.$": "$.config.process_bucket_name",
         "data_base.$": "$.config.database",
         "work_group.$": "$.config.workgroup",
-        "drop_query.$": "$.config.queries.context.drop.query",
-        "ctas_query.$": "$.config.queries.context.create.query",
+        "drop_query.$": "$.config.context.drop.query",
+        "ctas_query.$": "$.config.context.create.query",
         "drop_output_location.$": "$.config.drop_queries_output_prefix",
-        "ctas_output_location.$": "$.config.queries.context.create.output_prefix"
+        "ctas_output_location.$": "$.config.context.create.output_prefix"
       },
       "Retry": [
         {
@@ -68,10 +68,10 @@
                 "bucket_name.$": "$.config.process_bucket_name",
                 "data_base.$": "$.config.database",
                 "work_group.$": "$.config.workgroup",
-                "drop_query.$": "$.config.queries.logic.drop.query",
-                "ctas_query.$": "$.config.queries.logic.create.query",
+                "drop_query.$": "$.config.logic.drop.query",
+                "ctas_query.$": "$.config.logic.create.query",
                 "drop_output_location.$": "$.config.drop_queries_output_prefix",
-                "ctas_output_location.$": "$.config.queries.logic.create.output_prefix"
+                "ctas_output_location.$": "$.config.logic.create.output_prefix"
               },
               "Retry": [
                 {
@@ -93,7 +93,7 @@
                       "Resource": "${move_s3_objects_lambda_arn}",
                       "Parameters": {
                         "source_bucket.$": "$.config.process_bucket_name",
-                        "source_path.$": "$.config.queries.logic.create.output_prefix",
+                        "source_path.$": "$.config.logic.create.output_prefix",
                         "destination_bucket.$": "$.config.processed_bucket_name",
                         "destination_path.$": "States.Format('{}run-reports/', $.config.processed_parquet_prefix)"
                       },
@@ -124,10 +124,10 @@
                 "bucket_name.$": "$.config.process_bucket_name",
                 "data_base.$": "$.config.database",
                 "work_group.$": "$.config.workgroup",
-                "drop_query.$": "$.config.queries.leftover.drop.query",
-                "ctas_query.$": "$.config.queries.leftover.create.query",
+                "drop_query.$": "$.config.leftover.drop.query",
+                "ctas_query.$": "$.config.leftover.create.query",
                 "drop_output_location.$": "$.config.drop_queries_output_prefix",
-                "ctas_output_location.$": "$.config.queries.leftover.create.output_prefix"
+                "ctas_output_location.$": "$.config.leftover.create.output_prefix"
               },
               "Retry": [
                 {
@@ -155,10 +155,10 @@
         "bucket_name.$": "$.config.process_bucket_name",
         "data_base.$": "$.config.database",
         "work_group.$": "$.config.workgroup",
-        "drop_query.$": "$.config.queries.to_delete.drop.query",
-        "ctas_query.$": "$.config.queries.to_delete.create.query",
+        "drop_query.$": "$.config.to_delete.drop.query",
+        "ctas_query.$": "$.config.to_delete.create.query",
         "drop_output_location.$": "$.config.drop_queries_output_prefix",
-        "ctas_output_location.$": "$.config.queries.to_delete.create.output_prefix"
+        "ctas_output_location.$": "$.config.to_delete.create.output_prefix"
       },
       "Retry": [
         {
@@ -180,7 +180,7 @@
       "Resource": "${delete_s3_objects_lambda_arn}",
       "Parameters": {
         "bucket_name.$": "$.config.process_bucket_name",
-        "path.$": "$.config.queries.to_delete.create.output_prefix"
+        "path.$": "$.config.to_delete.create.output_prefix"
       },
       "Retry": [
         {

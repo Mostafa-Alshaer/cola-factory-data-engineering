@@ -12,6 +12,9 @@ def lambda_handler(event, context):
     # Create an S3 client
     s3_client = boto3.client('s3')
 
+    # mete files extensions that should not be moved to the final destination
+    meta_data_files_extensions = ['csv', 'metadata']
+
     # List all objects in the source S3 bucket and path
     objects_to_move = []
     response = s3_client.list_objects_v2(Bucket=source_bucket, Prefix=source_path)
@@ -20,8 +23,13 @@ def lambda_handler(event, context):
 
     # Move objects from the source to the destination S3 bucket and path
     for s3_object_key in objects_to_move:
+
+        if s3_object_key.split('.')[-1] in meta_data_files_extensions:
+            continue
+
         copy_source = {'Bucket': source_bucket, 'Key': s3_object_key}
-        destination_key = os.path.join(destination_path, os.path.relpath(s3_object_key, source_path))
+        destination_key = os.path.join(destination_path,
+                                       '/'.join(os.path.relpath(s3_object_key, source_path).split('/')[1:]))
 
         s3_client.copy_object(CopySource=copy_source, Bucket=destination_bucket, Key=destination_key)
         s3_client.delete_object(Bucket=source_bucket, Key=s3_object_key)

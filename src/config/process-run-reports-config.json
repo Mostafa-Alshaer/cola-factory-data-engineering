@@ -29,7 +29,7 @@
           "query": "DROP TABLE IF EXISTS run_reports_logic_tbl"
         },
         "create": {
-          "query": "CREATE TABLE run_reports_logic_tbl WITH (format = 'Parquet', parquet_compression = 'SNAPPY') AS SELECT * FROM run_reports_logic_view;",
+          "query": "CREATE TABLE run_reports_logic_tbl WITH (format = 'Parquet', parquet_compression = 'SNAPPY', partitioned_by = ARRAY['branch_id','machine_id']) AS SELECT * FROM run_reports_logic_view;",
           "output_prefix": "logic/run_reports/"
         }
       },

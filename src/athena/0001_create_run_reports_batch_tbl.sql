@@ -10,5 +10,5 @@ WITH SERDEPROPERTIES (
   'field.delim' = ',',
   'serialization.format' = ','
 )
-LOCATION 's3://cola-factory-process-data-${environment}/batch/run_reports'
+LOCATION 's3://cola-factory-process-data-${environment}/batch/run-reports/'
 TBLPROPERTIES ('has_encrypted_data'='false');

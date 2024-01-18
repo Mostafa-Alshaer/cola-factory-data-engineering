@@ -93,7 +93,7 @@
                       "Resource": "${move_s3_objects_lambda_arn}",
                       "Parameters": {
                         "source_bucket.$": "$.config.process_bucket_name",
-                        "source_path.$": "$.config.logic.create.output_prefix",
+                        "source_path.$": "States.Format('{}tables/', $.config.logic.create.output_prefix)",
                         "destination_bucket.$": "$.config.processed_bucket_name",
                         "destination_path.$": "States.Format('{}run-reports/', $.config.processed_parquet_prefix)"
                       },

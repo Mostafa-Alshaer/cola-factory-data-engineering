@@ -27,9 +27,18 @@ resource "aws_iam_policy" "run_athena_policy" {
         Action = [
           "athena:StartQueryExecution",
           "athena:GetQueryExecution",
-          "athena:GetQueryResults"
+          "athena:GetQueryResults",
+          "glue:GetTable",
+          "glue:CreatePartition",
+          "athena:GetWorkGroup",
+          "athena:StopQueryExecution",
+          "glue:GetPartitions",
+          "glue:BatchCreatePartition",
+          "athena:StartQueryExecution",
+          "glue:GetDatabase"
+
         ],
-        Resource = var.athena_work_group_arn
+        Resource = "*"
       }
     ]
   })

@@ -37,16 +37,11 @@ def lambda_handler(event, context):
         print(f"Moved object: s3://{source_bucket}/{s3_object_key} to s3://{destination_bucket}/{destination_key}")
 
 
-# for run this code locally
+# for debugging lambda locally
 if __name__ == '__main__':
-    import json
-    with open('../input-sample/cola-factory-data-team-move-s3-objects-input-sample.json') as json_file:
-        event_for_testing = json.load(json_file)
-    from collections import namedtuple
-    Context = namedtuple('Context', 'invoked_function_arn function_version')
-    lambda_handler(event_for_testing,
-                   Context(
-                       invoked_function_arn='arn:aws:lambda:us-east-1:XXX:function:cola-factory-data-team-move-s3'
-                                            '-objects',
-                       function_version='$LATEST'))
-
+    lambda_handler({
+        "source_bucket": "cola-factory-raw-data-mustafa-dev",
+        "source_path": "",
+        "destination_bucket": "cola-factory-process-data-mustafa-dev",
+        "destination_path": "batch/"
+    }, "")

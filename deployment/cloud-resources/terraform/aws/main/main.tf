@@ -35,7 +35,7 @@ module iam-copy-to-process-lambda {
 # copy to process lambda
 module copy-to-process-lambda {
   source            = "../lambda/copy-to-process"
-  python_code_path = "../../../../../src/lambda/code"
+  python_code_path = "../../../../../src/lambda"
   python_file_name = "cola-factory-data-team-copy-to-process"
   role_arn = module.iam-copy-to-process-lambda.copy_to_process_lambda_role.arn
   environment  = local.environment
@@ -70,7 +70,7 @@ module iam-delete-s3-objects-lambda {
 # delete s3 objects lambda
 module delete-s3-objects-lambda {
   source            = "../lambda/delete-s3-objects"
-  python_code_path = "../../../../../src/lambda/code"
+  python_code_path = "../../../../../src/lambda"
   python_file_name = "cola-factory-data-team-delete-s3-objects"
   role_arn = module.iam-delete-s3-objects-lambda.delete_s3_objects_lambda_role.arn
   environment  = local.environment
@@ -88,7 +88,7 @@ module iam-move-s3-objects-lambda {
 # move s3 objects lambda
 module move-s3-objects-lambda {
   source            = "../lambda/move-s3-objects"
-  python_code_path = "../../../../../src/lambda/code"
+  python_code_path = "../../../../../src/lambda"
   python_file_name = "cola-factory-data-team-move-s3-objects"
   role_arn = module.iam-move-s3-objects-lambda.move_s3_objects_lambda_role.arn
   environment  = local.environment
@@ -114,7 +114,7 @@ module iam-read-config-lambda {
 # read config lambda
 module read-config-lambda {
   source            = "../lambda/read-config"
-  python_code_path = "../../../../../src/lambda/code"
+  python_code_path = "../../../../../src/lambda"
   python_file_name = "cola-factory-data-team-read-config"
   role_arn = module.iam-read-config-lambda.read_config_lambda_role.arn
   environment  = local.environment
@@ -132,7 +132,7 @@ module iam-run-ctas-athena-lambda {
 # run ctas athena lambda
 module run-ctas-athena-lambda {
   source            = "../lambda/run-ctas-athena"
-  python_code_path = "../../../../../src/lambda/code"
+  python_code_path = "../../../../../src/lambda"
   python_file_name = "cola-factory-data-team-run-ctas-athena"
   role_arn = module.iam-run-ctas-athena-lambda.run_ctas_athena_lambda_role.arn
   environment  = local.environment

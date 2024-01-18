@@ -1,9 +1,0 @@
-{
-    "bucket_name": "cola-factory-process-data-mostafadev",
-    "data_base": "cola_process_data_mostafadev",
-    "work_group": "cola_data_team_process_work_group_mostafadev",
-    "drop_query": "DROP TABLE IF EXISTS run_reports_leftover_tbl",
-    "ctas_query": "CREATE TABLE run_reports_leftover_tbl WITH (format = 'Parquet', parquet_compression = 'SNAPPY') AS SELECT * FROM run_reports_leftover_view",
-    "drop_output_location": "leftover/drop/",
-    "ctas_output_location": "leftover/ctas/"
-}

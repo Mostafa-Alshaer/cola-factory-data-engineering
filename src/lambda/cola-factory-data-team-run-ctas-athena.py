@@ -56,7 +56,6 @@ def run_query_with_py_athena(query, output_location, data_base, work_group):
 
 
 def lambda_handler(event, context):
-
     # get the needed event params
     bucket_name = event['bucket_name']
     data_base = event['data_base']
@@ -90,10 +89,15 @@ def lambda_handler(event, context):
     return ctas_query_id
 
 
-# for run this code locally
+# for debugging lambda locally
 if __name__ == "__main__":
-    with open('../input-sample/cola-factory-data-team-run-ctas-athena-input-sample.json') as json_file:
-        event_for_testing = json.load(json_file)
-    lambda_handler(event_for_testing, "")
-
-
+    lambda_handler({
+        "bucket_name": "cola-factory-process-data-mostafadev",
+        "data_base": "cola_process_data_mostafadev",
+        "work_group": "cola_data_team_process_work_group_mostafadev",
+        "drop_query": "DROP TABLE IF EXISTS run_reports_leftover_tbl",
+        "ctas_query": "CREATE TABLE run_reports_leftover_tbl WITH (format = 'Parquet', parquet_compression = "
+                      "'SNAPPY') AS SELECT * FROM run_reports_leftover_view",
+        "drop_output_location": "leftover/drop/",
+        "ctas_output_location": "leftover/ctas/"
+    }, "")

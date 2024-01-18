@@ -1,6 +1,0 @@
-{
-    "source_bucket": "cola-factory-raw-data-mustafa-dev",
-    "source_path": "",
-    "destination_bucket": "cola-factory-process-data-mustafa-dev",
-    "destination_path": "batch/"
-}

@@ -35,7 +35,6 @@ def split(array, parts):
 
 
 def clean_working_folders(all_data, working_folders_bucket_name):
-
     # extract kpi s3 keys to delete
     s3_keys = []
     for i, row in all_data.iterrows():
@@ -106,16 +105,9 @@ def lambda_handler(event, context):
         clean_working_folders(all_files_content, working_folders_bucket_name)
 
 
-# for run this code locally
+# for debugging lambda locally
 if __name__ == '__main__':
-    import json
-    with open('../input-sample/cola-factory-data-team-delete-s3-objects-input-sample.json') as json_file:
-        event_for_testing = json.load(json_file)
-    from collections import namedtuple
-    Context = namedtuple('Context', 'invoked_function_arn function_version')
-    lambda_handler(event_for_testing,
-                   Context(
-                       invoked_function_arn='arn:aws:lambda:us-east-1:XXX:function:cola-factory-data-team-delete-s3'
-                                            '-objects',
-                       function_version='$LATEST'))
-
+    lambda_handler({
+        "bucket_name": "cola-factory-process-data-mostafadev",
+        "path": "s6-serverless/ctas/threshold/to_delete/"
+    }, "")

@@ -4,6 +4,7 @@ resource "aws_lambda_function" "copy-to-process-lambda" {
   role             = var.role_arn
   handler          = "${var.python_file_name}.${var.handler}"
   runtime          = "python3.9"
+  timeout          = 20
   source_code_hash = data.archive_file.zip_copy_to_process_lambda_code.output_base64sha256
   environment {
     variables = {

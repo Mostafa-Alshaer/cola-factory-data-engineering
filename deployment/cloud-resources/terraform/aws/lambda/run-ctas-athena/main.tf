@@ -4,9 +4,9 @@ resource "aws_lambda_function" "run-ctas-athena-lambda" {
   role             = var.role_arn
   handler          = "${var.python_file_name}.${var.handler}"
   runtime          = "python3.9"
+  timeout          = 20
   source_code_hash = data.archive_file.zip_run_ctas_athena_lambda_code.output_base64sha256
-  layers = [var.pyathena_lambda_layer_arn]
-  timeout = 20
+  layers           = [var.pyathena_lambda_layer_arn]
   tags = {
     name  = "${var.python_file_name}-${var.environment}"
     owner = "data-team"

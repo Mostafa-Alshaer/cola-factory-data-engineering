@@ -179,8 +179,12 @@
       "Type": "Task",
       "Resource": "${delete_s3_objects_lambda_arn}",
       "Parameters": {
+        "to_delete_table_name.$": "$.config.to_delete_table_name",
+        "to_delete_column_name.$": "$.config.to_delete_column_name",
         "bucket_name.$": "$.config.process_bucket_name",
-        "path.$": "$.config.to_delete.create.output_prefix"
+        "read_to_delete_out_path.$": "$.config.read_to_delete_out_path",
+        "database.$": "$.config.database",
+        "work_group.$": "$.config.workgroup"
       },
       "Retry": [
         {

@@ -6,6 +6,9 @@
   "processed_bucket_name": "cola-factory-processed-data-${environment}",
   "processed_parquet_prefix": "parquet/",
   "drop_queries_output_prefix": "athena-output/drop/",
+  "read_to_delete_out_path": "read_to_delete_athena_out/",
+  "to_delete_table_name": "run_reports_to_delete_tbl",
+  "to_delete_column_name": "s3_key",
   "context": {
         "drop": {
           "query": "DROP TABLE IF EXISTS run_reports_context_tbl"

@@ -15,10 +15,9 @@ variable "role_arn" {
   description = "The role should be attached with this lambda."
   type = string
 }
-variable "layers" {
-    description = "The list of needed layers for the lambda."
-    type = list
-    default = []
+variable "pyathena_lambda_layer_arn" {
+    description = "The pyathena lambda layer arn."
+    type = string
 }
 variable "environment" {
     description = "The environment name."

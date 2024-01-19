@@ -1,113 +1,55 @@
-import math
-import multiprocessing
-
-import awswrangler as wr
 import boto3
-import pandas as pd
-
-
-def get_all_folders_inside_tables(bucket_name, key):
-    s3_client = boto3.client('s3')
-    paginator = s3_client.get_paginator('list_objects')
-    result = paginator.paginate(Bucket=bucket_name, Delimiter='/', Prefix=key)
-    folders = []
-    for prefix in result.search('CommonPrefixes'):
-        if prefix:
-            folders.append(prefix.get('Prefix').split('/')[3])
-    return folders
-
-
-def delete_s3_objects(s3_keys, bucket_name):
-    s3_client = boto3.resource('s3')
-    for s3_key in s3_keys:
-        s3_client.Object(bucket_name, s3_key).delete()
-
-
-def split(array, parts):
-    size = math.ceil(len(array) / parts)
-    partial_arrays = []
-    while len(array) > size:
-        partial_array = array[:size]
-        partial_arrays.append(partial_array)
-        array = array[size:]
-    partial_arrays.append(array)
-    return partial_arrays
-
-
-def clean_working_folders(all_data, working_folders_bucket_name):
-    # extract kpi s3 keys to delete
-    s3_keys = []
-    for i, row in all_data.iterrows():
-        s3_keys.append(row['s3_key'].replace("s3://" + working_folders_bucket_name + "/", ""))
-
-    s3_keys_array_len = len(s3_keys)
-    print("Deleting {} s3 objects we handled from working folders.".format(s3_keys_array_len))
-
-    processes_count = min(s3_keys_array_len, 15)
-    errors_s3_keys_sub_arrays = split(s3_keys, processes_count)
-    processes = []
-    try:
-        for s3_keys_array in errors_s3_keys_sub_arrays:
-            process = multiprocessing.Process(target=delete_s3_objects,
-                                              args=(s3_keys_array, working_folders_bucket_name,))
-            process.start()
-            processes.append(process)
-        # wait until each process is finished.
-        for index, process in enumerate(processes):
-            print("before joining deleting handled s3 objects process ", index)
-            process.join()
-            print("deleting handled s3 objects process ", index, "done")
-
-    except:
-        print("Error ! unable to start processes")
+from pyathena import connect
 
 
 def lambda_handler(event, context):
-    print(f'event: {event}')
+    # get event info
+    database = event['database']
+    work_group = event['work_group']
+    to_delete_table_name = event['to_delete_table_name']
+    to_delete_column_name = event['to_delete_column_name']
+    bucket_name = event['bucket_name']
+    read_to_delete_out_path = event['read_to_delete_out_path']
 
-    # get s3 resource instance
-    s3_resource = boto3.resource('s3')
-    print("Getting s3 resource instance succeed!")
+    # Set up Athena client
+    # Create connection with PyAthena
+    athena_client = connect(s3_staging_dir=f's3://{bucket_name}/{read_to_delete_out_path}',
+                            region_name='us-east-1',
+                            schema_name=database,
+                            work_group=work_group
+                            ).cursor()
 
-    # get athena output bucket instance
-    athena_output_bucket_name = event['bucket_name']
-    athena_output_bucket = s3_resource.Bucket(athena_output_bucket_name)
-    print("Getting athena output bucket instance succeed!")
+    # Query Athena to get S3 keys
+    query = f'SELECT {to_delete_column_name} FROM {to_delete_table_name};'
+    result = athena_client.execute(query)
 
-    # get working folder bucket name
-    working_folders_bucket_name = event['bucket_name']
-    print("Getting working folder bucket name succeed!")
+    # Extract S3 keys from the query result
+    s3_paths = [row[0] for row in result]
 
-    # get to delete query out path 
-    path = event['path']
-    print("Getting to delete query out path succeed!")
+    # Set up S3 client
+    s3_client = boto3.client('s3')
 
-    # get the athena output parquet files and content
-    folders = get_all_folders_inside_tables(athena_output_bucket_name, path + "tables/")
-    print("folders inside tables", folders)
-    all_files_contents_list = []
-    for folder in folders:
-        athena_parquets_full_path = path + "tables/" + folder + "/"
-        print("athena_parquets_full_path", athena_parquets_full_path)
-        athena_output_parquet_files = athena_output_bucket.objects.filter(Prefix=athena_parquets_full_path)
-        print("Getting athena output parquet files object summaries succeed")
-        # get athena output parquet files and collect rows for each press
-        for object_summary in athena_output_parquet_files:
-            parquet_file_full_path = 's3://' + athena_output_bucket_name + '/' + object_summary.key
-            parquet_file = wr.s3.read_parquet(path=parquet_file_full_path)
-            all_files_contents_list.append(parquet_file)
-    print("Getting the athena output parquet files and content succeed!")
+    # Delete S3 objects in bulk
+    objects_to_delete = [{'Key': s3_path.replace(f's3://{bucket_name}/', '')} for s3_path in s3_paths]
 
-    if len(all_files_contents_list) > 0:
-        # concat all output parquet files
-        all_files_content = pd.concat(all_files_contents_list)
-        print("Contacting all output parquet files succeed!")
-        clean_working_folders(all_files_content, working_folders_bucket_name)
+    # delete objects if there any need to be deleted
+    if len(objects_to_delete) > 0:
+        response = s3_client.delete_objects(
+            Bucket=bucket_name,
+            Delete={'Objects': objects_to_delete}
+        )
+        deleted_objects = response.get('Deleted', [])
+        for deleted_object in deleted_objects:
+            print(f"Deleted object: s3://{bucket_name}/{deleted_object['Key']}")
 
 
 # for debugging lambda locally
 if __name__ == '__main__':
     lambda_handler({
+        "to_delete_table_name": "run_reports_to_delete_tbl",
+        "to_delete_column_name": "s3_key",
         "bucket_name": "cola-factory-process-data-mostafadev",
-        "path": "s6-serverless/ctas/threshold/to_delete/"
+        "read_to_delete_out_path": "read_to_delete_athena_out/",
+        "database": "cola_process_data_mostafadev",
+        "work_group": "cola_data_team_process_work_group_mostafadev"
     }, "")

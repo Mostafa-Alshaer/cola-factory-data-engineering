@@ -1,58 +1,85 @@
 import boto3
-import time
-import json
 from pyathena import connect
 
 
-def delete_mate_and_csv_files(bucket_name, path_to_delete):
+def delete_s3_objects_by_path(bucket_name, path_prefix, file_extensions=None):
+    """
+    Delete objects in an S3 bucket based on a given path prefix and optional file extensions.
+
+    Parameters:
+    - bucket_name (str): The name of the S3 bucket.
+    - path_prefix (str): The path prefix to filter objects for deletion.
+    - file_extensions (list, optional): A list of file extensions to filter objects for deletion.
+
+    Returns:
+    - list: A list of deleted object keys.
+    """
     s3_client = boto3.client('s3')
-    all_files = s3_client.list_objects_v2(Bucket=bucket_name, Prefix=path_to_delete)
-    if 'Contents' not in all_files:
-        print(f'{bucket_name}/{path_to_delete} is empty')
-    else:
-        all_keys = all_files['Contents']
-        print(f'{path_to_delete} {len(all_keys)} Total files')
-        for key in all_keys:
-            # delete csv and metadata files
-            if key['Key'].split('.')[-1] in ['csv', 'metadata']:
-                print(str(key['Key']) + ' Not Parquet File')
-                s3_client.delete_object(Bucket=bucket_name, Key=key['Key'])
-                print(str(key['Key']) + ' deleting succeed')
+
+    # List objects in the specified path
+    response = s3_client.list_objects_v2(Bucket=bucket_name, Prefix=path_prefix)
+
+    # Extract object keys from the response
+    object_keys = [obj['Key'] for obj in response.get('Contents', [])]
+
+    if not object_keys:
+        print(f"No objects found in the path: s3://{bucket_name}/{path_prefix}")
+        return []
+
+    # Filter objects based on file extensions if provided
+    if file_extensions:
+        object_keys = [key for key in object_keys if key.endswith(tuple(file_extensions))]
+
+    if not object_keys:
+        print(f"No objects found with the specified file extensions in the path: s3://{bucket_name}/{path_prefix}")
+        return []
+
+    # Delete objects using delete_objects
+    objects_to_delete = [{'Key': object_key} for object_key in object_keys]
+
+    response = s3_client.delete_objects(
+        Bucket=bucket_name,
+        Delete={'Objects': objects_to_delete}
+    )
+
+    deleted_objects = response.get('Deleted', [])
+    deleted_object_keys = [obj['Key'] for obj in deleted_objects]
+
+    for deleted_object_key in deleted_object_keys:
+        print(f"Deleted object: s3://{bucket_name}/{deleted_object_key}")
+
+    return deleted_object_keys
 
 
-def wait_till_deletion_over(bucket_name, path_to_delete):
-    s3_client = boto3.client('s3')
-    time_passed = 0
-    open_files = s3_client.list_objects_v2(Bucket=bucket_name, Prefix=path_to_delete)
-    for interval in range(10):
-        if 'Contents' in open_files:
-            print("The Deletion of {} folder is not over, going to sleep.".format(path_to_delete))
-            time.sleep(1)
-            time_passed += 1
-        else:
-            print("The {} folder is empty.".format(path_to_delete))
-            break
-    if time_passed > 8:
-        print("The {} folder is not empty, try to delete again".format(path_to_delete))
-        return 0
-    else:
-        return 1
+def run_athena_query(query, database, output_location, workgroup):
+    """
+    Run an Athena query and print the query ID.
 
+    Parameters:
+    - query (str): The SQL query to be executed.
+    - database (str): The name of the Athena database.
+    - output_location (str): The S3 location where query results will be stored.
+    - workgroup (str, optional): The Athena workgroup. If not provided, the default workgroup is used.
+    """
+    # Establish a connection to Athena
+    connection = connect(s3_staging_dir=output_location,
+                         region_name='us-east-1',
+                         schema_name=database,
+                         work_group=workgroup)
 
-def run_query_with_py_athena(query, output_location, data_base, work_group):
-    # Create connection with PyAthena
-    cursor = connect(s3_staging_dir=output_location,
-                     region_name='us-east-1',
-                     schema_name=data_base,
-                     work_group=work_group
-                     ).cursor()
-    try:
-        cursor.execute(query)
-        query_id = cursor.query_id
-        return query_id
-    except Exception as e:
-        print(e)
-        raise Exception('The query is failed / canceled')
+    # Create a cursor
+    cursor = connection.cursor()
+
+    # Execute the query
+    cursor.execute(query)
+
+    # Get the query ID
+    query_id = cursor.query_id
+    print(f"Athena Query ID for the query '{query}': {query_id}")
+
+    # Close the cursor and connection
+    cursor.close()
+    connection.close()
 
 
 def lambda_handler(event, context):
@@ -66,27 +93,18 @@ def lambda_handler(event, context):
     ctas_output_location = event['ctas_output_location']
 
     # Delete files from ctas output location
-    s3_resource = boto3.resource('s3')
-    bucket = s3_resource.Bucket(bucket_name)
-    bucket.objects.filter(Prefix=ctas_output_location).delete()
-    if not wait_till_deletion_over(bucket_name, ctas_output_location):
-        bucket.objects.filter(Prefix=ctas_output_location).delete()
+    deleted_objects = delete_s3_objects_by_path(bucket_name, ctas_output_location)
+    print(f"Deleted objects: {deleted_objects}")
 
     # Execute drop if exists query
-    drop_query_id = run_query_with_py_athena(drop_query, f's3://{bucket_name}/{drop_output_location}',
-                                             data_base, work_group)
-    print(f'The query_id of the drop query {drop_query} is {drop_query_id}')
+    run_athena_query(drop_query, data_base, f's3://{bucket_name}/{drop_output_location}', work_group)
 
     # Execute CTAS query
-    ctas_query_id = run_query_with_py_athena(ctas_query, f's3://{bucket_name}/{ctas_output_location}',
-                                             data_base, work_group)
-    print(f'The query_id of the ctas query {ctas_query} is {ctas_query_id}')
+    run_athena_query(ctas_query, data_base, f's3://{bucket_name}/{ctas_output_location}', work_group)
 
-    # Delete ctas output meta data files
-    delete_mate_and_csv_files(bucket_name, ctas_output_location)
-    print(f'Deleting ctas output meta and csv files from {ctas_output_location}')
-
-    return ctas_query_id
+    # Delete meta data files
+    delete_s3_objects_by_path(bucket_name, ctas_output_location, ['csv', 'metadata'])
+    print(f"Deleted meta and csv objects: {deleted_objects}")
 
 
 # for debugging lambda locally

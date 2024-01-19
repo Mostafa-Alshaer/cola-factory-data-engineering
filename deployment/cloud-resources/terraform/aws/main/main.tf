@@ -74,7 +74,7 @@ module delete-s3-objects-lambda {
   python_file_name = "cola-factory-data-team-delete-s3-objects"
   role_arn = module.iam-delete-s3-objects-lambda.delete_s3_objects_lambda_role.arn
   environment  = local.environment
-  layers = ["arn:aws:lambda:us-east-1:336392948345:layer:AWSDataWrangler-Python39:2"]
+  pyathena_lambda_layer_arn = module.pyathena-lambda-layer.pyathena_layer.arn
 }
 # iam for the move-s3-objects lambda
 module iam-move-s3-objects-lambda {

@@ -3,6 +3,16 @@ from pyathena import connect
 
 
 def lambda_handler(event, context):
+    """
+    Lambda function to delete S3 objects based on Athena query results.
+
+    Parameters:
+    - event (dict): AWS Lambda event data.
+    - context (object): AWS Lambda context.
+
+    Returns:
+    - None
+    """
     # get event info
     database = event['database']
     work_group = event['work_group']

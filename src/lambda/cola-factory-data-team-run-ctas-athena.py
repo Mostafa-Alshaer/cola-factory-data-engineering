@@ -83,6 +83,17 @@ def run_athena_query(query, database, output_location, workgroup):
 
 
 def lambda_handler(event, context):
+    """
+    Lambda function to perform a sequence of operations including deleting S3 objects,
+    executing Athena queries, and deleting additional S3 objects.
+
+    Parameters:
+    - event (dict): AWS Lambda event data.
+    - context (object): AWS Lambda context.
+
+    Returns:
+    - None
+    """
     # get the needed event params
     bucket_name = event['bucket_name']
     data_base = event['data_base']

@@ -3,6 +3,16 @@ import os
 
 
 def lambda_handler(event, context):
+    """
+    Lambda function to move objects from one S3 bucket/path to another.
+
+    Parameters:
+    - event (dict): AWS Lambda event data.
+    - context (object): AWS Lambda context.
+
+    Returns:
+    - None
+    """
     # Ensure that the necessary environment variables are set
     source_bucket = event.get('source_bucket')
     source_path = event.get('source_path', '')

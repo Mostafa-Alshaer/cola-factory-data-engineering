@@ -5,6 +5,16 @@ import os
 
 
 def lambda_handler(event, context):
+    """
+    Lambda function to copy an S3 object to a specified processing bucket and path.
+
+    Parameters:
+    - event (dict): AWS Lambda event data.
+    - context (object): AWS Lambda context.
+
+    Returns:
+    - None
+    """
     # extract s3 bucket and key
     s3_bucket_name = event['Records'][0]['s3']['bucket']['name']
     s3_key = unquote(event['Records'][0]['s3']['object']['key'])

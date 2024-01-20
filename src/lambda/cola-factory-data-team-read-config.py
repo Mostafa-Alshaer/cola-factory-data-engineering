@@ -5,6 +5,16 @@ import boto3
 
 
 def lambda_handler(event, context):
+    """
+    Lambda function to retrieve and parse a JSON configuration file from an S3 bucket.
+
+    Parameters:
+    - event (dict): AWS Lambda event data.
+    - context (object): AWS Lambda context.
+
+    Returns:
+    - dict: Parsed JSON data from the configuration file.
+    """
     # Retrieve the S3 bucket and key
     s3_bucket = os.environ["PROCESS_BUCKET"]
     s3_key = event.get('config_s3_key')

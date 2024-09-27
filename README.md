@@ -17,6 +17,10 @@ The Cola Factory Data Engineering project serves not only as a robust solution f
 
 By adopting this template, users can leverage AWS services effectively, adhere to best practices, and accelerate the development and deployment of data projects. The project's modular structure and environment management capabilities make it a valuable resource for anyone aiming to build and deploy data solutions with minimal effort.
 
+## High Level Arch
+
+![High Level Arch](high-level-arch.png)
+
 ## Components
 
 ### 1. AWS Services
